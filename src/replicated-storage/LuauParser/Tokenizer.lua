@@ -1,6 +1,15 @@
 -- var
 local TokenizerMetatable
 
+-- private / Tokenizer class methods
+local function isEndOfFile(self)
+    return self._Cursor > string.len(self._String)
+end
+local function getNextChar(self)
+    self._Cursor += 1
+    return string.sub(self._String, self._Cursor, self._Cursor)
+end
+
 -- public / Tokenizer class methods
 local function tokenizerHasMoreTokens(self)
     return self._Cursor <= string.len(self._String)
@@ -17,13 +26,26 @@ local function tokenizerGetNextToken(self)
         local number = ""
         repeat
             number ..= char
-            self._Cursor += 1
-            char = string.sub(self._String, self._Cursor, self._Cursor)
+            char = getNextChar(self)
         until tonumber(char) == nil
 
         return {
             Type = "NUMBER",
             Value = tonumber(number),
+        }
+    end
+
+    -- strings
+    if char == '"' then
+        local string = char
+        repeat
+            char = getNextChar(self)
+            string ..= char
+        until char == '"' or isEndOfFile(self)
+
+        return {
+            Type = "STRING",
+            Value = `{string}`
         }
     end
 end
