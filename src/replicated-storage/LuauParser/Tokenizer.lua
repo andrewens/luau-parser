@@ -3,51 +3,44 @@ local TokenizerMetatable
 
 -- private / Tokenizer class methods
 local function isEndOfFile(self)
-    return self._Cursor > string.len(self._String)
+	return self._Cursor > string.len(self._String)
 end
 local function getNextChar(self)
-    self._Cursor += 1
-    return string.sub(self._String, self._Cursor, self._Cursor)
+	self._Cursor += 1
+	return string.sub(self._String, self._Cursor, self._Cursor)
 end
 
 -- public / Tokenizer class methods
 local function tokenizerHasMoreTokens(self)
-    return self._Cursor <= string.len(self._String)
+	return self._Cursor <= string.len(self._String)
 end
 local function tokenizerGetNextToken(self)
-    if not tokenizerHasMoreTokens(self) then
-        return
-    end
+	if not tokenizerHasMoreTokens(self) then
+		return
+	end
 
-    local char = string.sub(self._String, self._Cursor, self._Cursor)
+	-- numbers
+	local number = string.match(self._String, "^%d+", self._Cursor)
+	if number then
+		self._Cursor += string.len(number)
 
-    -- numbers
-    if tonumber(char) then
-        local number = ""
-        repeat
-            number ..= char
-            char = getNextChar(self)
-        until tonumber(char) == nil
+		return {
+			Type = "NUMBER",
+			Value = number,
+		}
+	end
 
-        return {
-            Type = "NUMBER",
-            Value = tonumber(number),
-        }
-    end
+	-- strings
+    local matchedString = string.match(self._String, `^"[^"]*"`, self._Cursor)
+        or string.match(self._String, `^'[^']*'`, self._Cursor)
+	if matchedString then
+        self._Cursor += string.len(matchedString)
 
-    -- strings
-    if char == '"' or char == "'" then
-        local string = char
-        repeat
-            char = getNextChar(self)
-            string ..= char
-        until char == '"' or isEndOfFile(self)
-
-        return {
-            Type = "STRING",
-            Value = `{string}`
-        }
-    end
+		return {
+			Type = "STRING",
+			Value = matchedString,
+		}
+	end
 end
 
 -- public
@@ -56,13 +49,13 @@ local function newTokenizer(luauCode)
 	self._Cursor = 1
 	self._String = luauCode
 
-    setmetatable(self, TokenizerMetatable)
+	setmetatable(self, TokenizerMetatable)
 
 	return self
 end
 local function initializeTokenizer()
 	local TokenizerMethods = {
-        HasMoreTokens = tokenizerHasMoreTokens,
+		HasMoreTokens = tokenizerHasMoreTokens,
 		GetNextToken = tokenizerGetNextToken,
 	}
 	TokenizerMetatable = { __index = TokenizerMethods }

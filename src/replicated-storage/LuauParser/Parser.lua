@@ -31,7 +31,7 @@ local function NumericLiteral(self)
 	local Token = eatNextToken(self, "NUMBER")
 	return {
 		Type = "NumericLiteral",
-		Value = Token.Value,
+		Value = tonumber(Token.Value),
 	}
 end
 local function Literal(self)
