@@ -36,7 +36,7 @@ local function tokenizerGetNextToken(self)
     end
 
     -- strings
-    if char == '"' then
+    if char == '"' or char == "'" then
         local string = char
         repeat
             char = getNextChar(self)
