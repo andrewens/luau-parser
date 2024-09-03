@@ -1,7 +1,10 @@
 return {
 	Program = "42",
 	SyntaxTree = {
-		Type = "NumericLiteral",
-		Value = 42,
+		Type = "Chunk",
+		Body = {
+			Type = "NumericLiteral",
+			Value = 42,
+		},
 	},
 }

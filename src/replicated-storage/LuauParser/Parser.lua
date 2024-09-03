@@ -6,7 +6,10 @@ local function NumericLiteral(self)
 	}
 end
 local function Chunk(self)
-	return NumericLiteral(self)
+	return {
+		Type = "Chunk",
+		Body = NumericLiteral(self),
+	}
 end
 
 -- public
