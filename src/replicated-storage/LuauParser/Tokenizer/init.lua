@@ -1,14 +1,8 @@
+-- dependency
+local TokenizerRules = require(script.TokenizerRules)
+
 -- var
 local TokenizerMetatable
-
--- private / Tokenizer class methods
-local function isEndOfFile(self)
-	return self._Cursor > string.len(self._String)
-end
-local function getNextChar(self)
-	self._Cursor += 1
-	return string.sub(self._String, self._Cursor, self._Cursor)
-end
 
 -- public / Tokenizer class methods
 local function tokenizerHasMoreTokens(self)
@@ -19,28 +13,23 @@ local function tokenizerGetNextToken(self)
 		return
 	end
 
-	-- numbers
-	local number = string.match(self._String, "^%d+", self._Cursor)
-	if number then
-		self._Cursor += string.len(number)
+	for _, TokenizerRule in TokenizerRules do
+        local regexp, tokenType = table.unpack(TokenizerRule)
+
+		local matchedValue = string.match(self._String, regexp, self._Cursor)
+		if matchedValue == nil then
+			continue
+		end
+
+		self._Cursor += string.len(matchedValue)
 
 		return {
-			Type = "NUMBER",
-			Value = number,
+			Type = tokenType,
+			Value = matchedValue,
 		}
 	end
 
-	-- strings
-    local matchedString = string.match(self._String, `^"[^"]*"`, self._Cursor)
-        or string.match(self._String, `^'[^']*'`, self._Cursor)
-	if matchedString then
-        self._Cursor += string.len(matchedString)
-
-		return {
-			Type = "STRING",
-			Value = matchedString,
-		}
-	end
+	error(`Unexpected token: "{string.sub(self._String, self._Cursor, -1)}"`)
 end
 
 -- public
