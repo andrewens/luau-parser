@@ -1,8 +1,10 @@
--- public
-local function initLuauParser()
+-- dependency
+local Parser = require(script.Parser)
 
-end
+-- public
+local function initLuauParser() end
 
 return {
-    initialize = initLuauParser,
+	initialize = initLuauParser,
+	parse = Parser.parse,
 }
