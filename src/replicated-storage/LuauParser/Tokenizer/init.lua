@@ -33,7 +33,7 @@ local function tokenizerGetNextToken(self)
 		}
 	end
 
-	error(`Unexpected token: "{string.sub(self._String, self._Cursor, -1)}"`)
+	error(`Unexpected token: "{string.sub(self._String, self._Cursor, self._Cursor)}"`)
 end
 
 -- public
