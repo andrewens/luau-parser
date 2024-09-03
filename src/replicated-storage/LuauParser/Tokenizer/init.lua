@@ -15,17 +15,13 @@ local function tokenizerGetNextToken(self)
 
 	for _, TokenizerRule in TokenizerRules do
         local regexp, tokenType = table.unpack(TokenizerRule)
-		local matchedValue = string.match(self._String, regexp, self._Cursor)
 
+		local matchedValue = string.match(self._String, regexp, self._Cursor)
 		if matchedValue == nil then
 			continue
 		end
 
 		self._Cursor += string.len(matchedValue)
-
-        if tokenType == nil then
-            return tokenizerGetNextToken(self)
-        end
 
 		return {
 			Type = tokenType,
