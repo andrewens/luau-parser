@@ -1,6 +1,10 @@
 return {
+	-- ignore comments & whitespace
 	{ "^%s+", nil },
-	{ "%-%-.[^\n]*", nil },
+	{ "^%-%-%[%[.*%]%]", nil }, -- multi line comments
+	{ "^%-%-.[^\n]*", nil },
+
+	-- literals
 	{ `^%d+`, "NUMBER" },
 	{ `^"[^"]*"`, "STRING" },
 	{ `^'[^']*'`, "STRING" },
