@@ -27,20 +27,29 @@ end
 
 -- test
 return function()
-	describe("LuauParser", function()
-		for i, TestCaseModule in TestCasesFolder:GetChildren() do
-			local TestCase = require(TestCaseModule)
+	local function runTestCase(TestCaseModule)
+		if not TestCaseModule:IsA("ModuleScript") then
+			for _, ChildModule in TestCaseModule:GetChildren() do
+				runTestCase(ChildModule)
+			end
 
-			it(TestCaseModule.Name, function()
-				local AST = LuauParser.parse(TestCase.Program)
-
-				if not tableDeepEqual(AST, TestCase.SyntaxTree) then
-					warn("Program:", TestCase.Program)
-					warn("Result", AST)
-					warn("Correct Answer", TestCase.SyntaxTree)
-					error(`Failed Test`)
-				end
-			end)
+			return
 		end
+
+		it(TestCaseModule.Name, function()
+			local TestCase = require(TestCaseModule)
+			local AST = LuauParser.parse(TestCase.Program)
+
+			if not tableDeepEqual(AST, TestCase.SyntaxTree) then
+				warn("Program:", TestCase.Program)
+				warn("Result", AST)
+				warn("Correct Answer", TestCase.SyntaxTree)
+				error(`Failed Test`)
+			end
+		end)
+	end
+
+	describe("LuauParser", function()
+		runTestCase(TestCasesFolder)
 	end)
 end
