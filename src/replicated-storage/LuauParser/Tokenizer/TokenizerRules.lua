@@ -5,12 +5,15 @@ return {
 	{ "^%-%-.[^\n]*", nil },
 	{ "^;", nil },
 
-	-- literals
-	{ `^%d+`, "NUMBER" },
-	{ `^"[^"]*"`, "STRING" },
-	{ `^'[^']*'`, "STRING" },
+	-- operators
+	{ `^[%+/%-]`, "ADDITIVE_OPERATOR" },
 
 	-- control structures
 	{ `^do`, "do" },
 	{ `^end`, "end" },
+
+	-- literals
+	{ `^%d+`, "NUMBER" },
+	{ `^"[^"]*"`, "STRING" },
+	{ `^'[^']*'`, "STRING" },
 }

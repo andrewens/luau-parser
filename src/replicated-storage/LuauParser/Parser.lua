@@ -47,8 +47,25 @@ local function Literal(self)
 
 	error(`Literal: unexpected literal production`)
 end
+local function AdditiveExpression(self)
+	local left = Literal(self)
+
+	while self._NextToken and self._NextToken.Type == "ADDITIVE_OPERATOR" do
+		local operator = eatNextToken(self, "ADDITIVE_OPERATOR").Value
+		local right = Literal(self)
+
+		left = {
+			Type = "BinaryExpression",
+			Operator = operator,
+			Left = left,
+			Right = right,
+		}
+	end
+
+	return left
+end
 local function Expression(self)
-	return Literal(self)
+	return AdditiveExpression(self)
 end
 local function ExpressionStatement(self)
 	return {
