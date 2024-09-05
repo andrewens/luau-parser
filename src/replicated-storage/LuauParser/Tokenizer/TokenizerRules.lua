@@ -9,4 +9,8 @@ return {
 	{ `^%d+`, "NUMBER" },
 	{ `^"[^"]*"`, "STRING" },
 	{ `^'[^']*'`, "STRING" },
+
+	-- control structures
+	{ `^do`, "do" },
+	{ `^end`, "end" },
 }

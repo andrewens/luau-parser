@@ -20,8 +20,9 @@ local function eatNextToken(self, tokenType)
 end
 
 -- private / Production methods
+local StatementList
 local function StringLiteral(self)
-    local Token = eatNextToken(self, "STRING")
+	local Token = eatNextToken(self, "STRING")
 
 	return {
 		Type = "StringLiteral",
@@ -44,7 +45,7 @@ local function Literal(self)
 		return StringLiteral(self)
 	end
 
-    error(`Literal: unexpected literal production`)
+	error(`Literal: unexpected literal production`)
 end
 local function Expression(self)
 	return Literal(self)
@@ -52,16 +53,31 @@ end
 local function ExpressionStatement(self)
 	return {
 		Type = "ExpressionStatement",
-		Expression = Expression(self)
+		Expression = Expression(self),
+	}
+end
+local function BlockStatement(self)
+	eatNextToken(self, "do")
+
+	local body = if self._NextToken.Type == "end" then {} else StatementList(self, "end")
+
+	eatNextToken(self, "end")
+
+	return {
+		Type = "BlockStatement",
+		Body = body,
 	}
 end
 local function Statement(self)
+	if self._NextToken.Type == "do" then
+		return BlockStatement(self)
+	end
 	return ExpressionStatement(self)
 end
-local function StatementList(self)
+function StatementList(self, stopLookAheadSymbol)
 	local StatList = { Statement(self) }
 
-	while (self._NextToken) do
+	while self._NextToken and self._NextToken.Type ~= stopLookAheadSymbol do
 		table.insert(StatList, Statement(self))
 	end
 
