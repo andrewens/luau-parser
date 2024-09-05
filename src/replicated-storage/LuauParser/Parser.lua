@@ -19,8 +19,35 @@ local function eatNextToken(self, tokenType)
 	return NextToken
 end
 
+--[[
+	Generic binary expression.
+]]
+local function binaryOperator(self, expressionMethod, operatorToken)
+	local left = expressionMethod(self)
+
+	while self._NextToken and self._NextToken.Type == operatorToken do
+		local operator = eatNextToken(self, operatorToken).Value
+		local right = expressionMethod(self)
+
+		left = {
+			Type = "BinaryExpression",
+			Operator = operator,
+			Left = left,
+			Right = right,
+		}
+	end
+
+	return left
+end
+
 -- private / Production methods
 local StatementList, Expression
+
+--[[
+	StringLiteral
+	  : STRING
+	  ;
+]]
 local function StringLiteral(self)
 	local Token = eatNextToken(self, "STRING")
 
@@ -29,6 +56,12 @@ local function StringLiteral(self)
 		Value = string.sub(Token.Value, 2, -2),
 	}
 end
+
+--[[
+	NumericLiteral
+	  : NUMBER
+	  ;
+]]
 local function NumericLiteral(self)
 	local Token = eatNextToken(self, "NUMBER")
 
@@ -79,49 +112,53 @@ local function PrimaryExpression(self)
 	end
 	return Literal(self)
 end
+
+--[[
+	MultiplicativeExpression
+	  : PrimaryExpression
+	  | MultiplicativeExpression MULTIPLICATIVE_OPERATOR PrimaryExpression
+	  ;
+]]
 local function MultiplicativeExpression(self)
-	local left = PrimaryExpression(self)
-
-	while self._NextToken and self._NextToken.Type == "MULTIPLICATIVE_OPERATOR" do
-		local operator = eatNextToken(self, "MULTIPLICATIVE_OPERATOR").Value
-		local right = PrimaryExpression(self)
-
-		left = {
-			Type = "BinaryExpression",
-			Operator = operator,
-			Left = left,
-			Right = right,
-		}
-	end
-
-	return left
+	return binaryOperator(self, PrimaryExpression, "MULTIPLICATIVE_OPERATOR")
 end
+
+--[[
+	AdditiveExpression
+	  : MultiplicativeExpression
+	  | AdditiveExpression ADDITIVE_OPERATOR MultiplicativeExpression
+	  ;
+]]
 local function AdditiveExpression(self)
-	local left = MultiplicativeExpression(self)
-
-	while self._NextToken and self._NextToken.Type == "ADDITIVE_OPERATOR" do
-		local operator = eatNextToken(self, "ADDITIVE_OPERATOR").Value
-		local right = MultiplicativeExpression(self)
-
-		left = {
-			Type = "BinaryExpression",
-			Operator = operator,
-			Left = left,
-			Right = right,
-		}
-	end
-
-	return left
+	return binaryOperator(self, MultiplicativeExpression, "ADDITIVE_OPERATOR")
 end
+
+--[[
+	Expression
+	  : Literal
+	  ;
+]]
 function Expression(self)
 	return AdditiveExpression(self)
 end
+
+--[[
+	ExpressionStatement
+	  : Expression
+	  ;
+]]
 local function ExpressionStatement(self)
 	return {
 		Type = "ExpressionStatement",
 		Expression = Expression(self),
 	}
 end
+
+--[[
+	BlockStatement
+	  : 'do' StatementList 'end'
+	  ;
+]]
 local function BlockStatement(self)
 	eatNextToken(self, "do")
 
@@ -134,12 +171,26 @@ local function BlockStatement(self)
 		Body = body,
 	}
 end
+
+--[[
+	Statement
+	  : BlockStatement
+	  | ExpressionStatement
+	  ;
+]]
 local function Statement(self)
 	if self._NextToken.Type == "do" then
 		return BlockStatement(self)
 	end
 	return ExpressionStatement(self)
 end
+
+--[[
+	StatementList
+	  : Statement
+	  | StatementList Statement --> Statement Statement Statement ... Statement
+	  ;
+]]
 function StatementList(self, stopLookAheadSymbol)
 	local StatList = { Statement(self) }
 
@@ -149,6 +200,12 @@ function StatementList(self, stopLookAheadSymbol)
 
 	return StatList
 end
+
+--[[
+	Chunk
+	  : StatementList
+	  ;
+]]
 local function Chunk(self)
 	return {
 		Type = "Chunk",
