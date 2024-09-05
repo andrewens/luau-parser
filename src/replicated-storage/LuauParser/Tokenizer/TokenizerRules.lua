@@ -6,7 +6,8 @@ return {
 	{ "^;", nil },
 
 	-- operators
-	{ `^[%+/%-]`, "ADDITIVE_OPERATOR" },
+	{ `^[%+%-]`, "ADDITIVE_OPERATOR" },
+	{ `^[%*%/]`, "MULTIPLICATIVE_OPERATOR" },
 
 	-- control structures
 	{ `^do`, "do" },

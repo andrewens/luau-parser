@@ -45,14 +45,34 @@ local function Literal(self)
 		return StringLiteral(self)
 	end
 
-	error(`Literal: unexpected literal production`)
+	error(`Literal: unexpected literal production: {NextToken and NextToken.Type or nil}`)
+end
+local function PrimaryExpression(self)
+	return Literal(self)
+end
+local function MultiplicativeExpression(self)
+	local left = PrimaryExpression(self)
+
+	while self._NextToken and self._NextToken.Type == "MULTIPLICATIVE_OPERATOR" do
+		local operator = eatNextToken(self, "MULTIPLICATIVE_OPERATOR").Value
+		local right = PrimaryExpression(self)
+
+		left = {
+			Type = "BinaryExpression",
+			Operator = operator,
+			Left = left,
+			Right = right,
+		}
+	end
+
+	return left
 end
 local function AdditiveExpression(self)
-	local left = Literal(self)
+	local left = MultiplicativeExpression(self)
 
 	while self._NextToken and self._NextToken.Type == "ADDITIVE_OPERATOR" do
 		local operator = eatNextToken(self, "ADDITIVE_OPERATOR").Value
-		local right = Literal(self)
+		local right = MultiplicativeExpression(self)
 
 		left = {
 			Type = "BinaryExpression",
