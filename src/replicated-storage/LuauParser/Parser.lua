@@ -19,6 +19,7 @@ local function eatNextToken(self, tokenType)
 	return NextToken
 end
 
+-- private / Production methods
 local function StringLiteral(self)
     local Token = eatNextToken(self, "STRING")
 
@@ -29,6 +30,7 @@ local function StringLiteral(self)
 end
 local function NumericLiteral(self)
 	local Token = eatNextToken(self, "NUMBER")
+
 	return {
 		Type = "NumericLiteral",
 		Value = tonumber(Token.Value),
@@ -44,10 +46,31 @@ local function Literal(self)
 
     error(`Literal: unexpected literal production`)
 end
+local function Expression(self)
+	return Literal(self)
+end
+local function ExpressionStatement(self)
+	return {
+		Type = "ExpressionStatement",
+		Expression = Expression(self)
+	}
+end
+local function Statement(self)
+	return ExpressionStatement(self)
+end
+local function StatementList(self)
+	local StatList = { Statement(self) }
+
+	while (self._NextToken) do
+		table.insert(StatList, Statement(self))
+	end
+
+	return StatList
+end
 local function Chunk(self)
 	return {
 		Type = "Chunk",
-		Body = Literal(self),
+		Body = StatementList(self),
 	}
 end
 

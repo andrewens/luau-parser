@@ -3,8 +3,13 @@ return {
 	SyntaxTree = {
 		Type = "Chunk",
 		Body = {
-			Type = "StringLiteral",
-			Value = "42",
+			{
+				Type = "ExpressionStatement",
+				Expression = {
+					Type = "StringLiteral",
+					Value = "42",
+				},
+			},
 		},
 	},
 }
