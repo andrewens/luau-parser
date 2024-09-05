@@ -5,13 +5,15 @@ return {
 	{ "^%-%-.[^\n]*", nil },
 	{ "^;", nil },
 
-	-- operators
-	{ `^[%+%-]`, "ADDITIVE_OPERATOR" },
-	{ `^[%*%/]`, "MULTIPLICATIVE_OPERATOR" },
-
 	-- control structures
 	{ `^do`, "do" },
 	{ `^end`, "end" },
+	{ `^%(`, "(" },
+	{ `^%)`, ")" },
+
+	-- operators
+	{ `^[%+%-]`, "ADDITIVE_OPERATOR" },
+	{ `^[%*%/]`, "MULTIPLICATIVE_OPERATOR" },
 
 	-- literals
 	{ `^%d+`, "NUMBER" },

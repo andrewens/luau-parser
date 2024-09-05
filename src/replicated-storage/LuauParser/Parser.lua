@@ -20,7 +20,7 @@ local function eatNextToken(self, tokenType)
 end
 
 -- private / Production methods
-local StatementList
+local StatementList, Expression
 local function StringLiteral(self)
 	local Token = eatNextToken(self, "STRING")
 
@@ -37,6 +37,13 @@ local function NumericLiteral(self)
 		Value = tonumber(Token.Value),
 	}
 end
+
+--[[
+	Literal
+	  : NumericLiteral
+	  | StringLiteral
+	  ;
+]]
 local function Literal(self)
 	local NextToken = self._NextToken
 	if NextToken.Type == "NUMBER" then
@@ -47,7 +54,29 @@ local function Literal(self)
 
 	error(`Literal: unexpected literal production: {NextToken and NextToken.Type or nil}`)
 end
+
+--[[
+	ParenthesizedExpression
+	  : '(' Expression ')'
+	  ;
+]]
+local function ParenthesizedExpression(self)
+	eatNextToken(self, "(")
+	local expression = Expression(self)
+	eatNextToken(self, ")")
+	return expression
+end
+
+--[[
+	PrimaryExpression
+	  : Literal
+	  | ParenthesizedExpression
+	  ;
+]]
 local function PrimaryExpression(self)
+	if self._NextToken.Type == "(" then
+		return ParenthesizedExpression(self)
+	end
 	return Literal(self)
 end
 local function MultiplicativeExpression(self)
@@ -84,7 +113,7 @@ local function AdditiveExpression(self)
 
 	return left
 end
-local function Expression(self)
+function Expression(self)
 	return AdditiveExpression(self)
 end
 local function ExpressionStatement(self)
